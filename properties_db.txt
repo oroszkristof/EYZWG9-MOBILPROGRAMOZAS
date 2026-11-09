@@ -1,0 +1,89 @@
+CREATE DATABASE property_db;
+
+
+USE ingatlannyilvantarto;
+
+Users tábla
+
+CREATE TABLE users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL
+);
+
+Properties tábla
+
+CREATE TABLE properties (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    owner_id INT NOT NULL,
+    name VARCHAR(100) NOT NULL,
+    address VARCHAR(255) NOT NULL,
+    monthly_rent DECIMAL(10,2) NOT NULL,
+    payment_due_day TINYINT NOT NULL,
+
+    FOREIGN KEY (owner_id) REFERENCES users(id)
+);
+
+Property users tábla
+
+CREATE TABLE property_users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    property_id INT NOT NULL UNIQUE,
+    user_id INT NOT NULL UNIQUE,
+    role ENUM('tulajdonos', 'bérlő') NOT NULL,
+
+    FOREIGN KEY (property_id) REFERENCES properties(id),
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
+Invitations tábla
+
+CREATE TABLE invitations (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    property_id INT NOT NULL,
+    user_id INT NOT NULL,
+    status ENUM('függőben', 'elfogadva', 'elutasítva') NOT NULL DEFAULT 'függőben',
+
+    FOREIGN KEY (property_id) REFERENCES properties(id),
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
+Settlements tábla
+
+CREATE TABLE settlements (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    property_id INT NOT NULL,
+    year INT NOT NULL,
+    month INT NOT NULL,
+    rent_amount DECIMAL(10,2) NOT NULL,
+    due_date DATE NOT NULL,
+
+    UNIQUE (property_id, year, month),
+    FOREIGN KEY (property_id) REFERENCES properties(id)
+);
+
+Utility_items tábla
+
+CREATE TABLE utility_items (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    settlement_id INT NOT NULL,
+    name VARCHAR(100) NOT NULL,
+    amount DECIMAL(10,2) NOT NULL,
+
+    FOREIGN KEY (settlement_id) REFERENCES settlements(id)
+);
+
+Payments tábla
+
+CREATE TABLE payments (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    settlement_id INT NOT NULL,
+    user_id INT NOT NULL,
+    amount DECIMAL(10,2) NOT NULL,
+    payment_date DATE NOT NULL,
+    status ENUM('függőben', 'jóváhagyva', 'elutasítva') NOT NULL DEFAULT 'függőben',
+
+    FOREIGN KEY (settlement_id) REFERENCES settlements(id),
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
